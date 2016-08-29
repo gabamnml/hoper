@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby -wU
+
+require 'hoper'
+require "curl"
+require 'uri'
+
+url = ARGV[0]
+
+if url.nil? || url.empty?
+  print "\n"
+  puts "Hoper #{Hoper::VERSION}"
+  print "\n"
+  puts "Usage: hoper [url] "
+  print "\n"
+  puts "EXAMPLE: \n  hoper http://mail.google.com "
+
+else
+  print "\n"
+  puts "Starting Hoper #{Hoper::VERSION} at #{Time.now.strftime("%d-%m-%Y %H:%M")}"
+
+
+  begin
+    @jumps = 0
+    c = Curl::Easy.new(url) do|curl|
+      curl.follow_location = true
+      curl.on_missing {|easy|
+        print "\n"
+        puts "The URL does not respond well. Probably return 400 error :("
+
+      }
+      curl.on_failure {|easy|
+        print "\n"
+        puts "The URL does not respond well. Probably return 500 error :("
+
+      }
+      curl.on_success {|easy|
+        print "\n"
+        puts "Total of #{@jumps.to_s} Hops in this session"
+
+      }
+      curl.on_complete {|easy|
+        fancy_headers = easy.header_str.split(/[\r\n]+/).map(&:strip)
+        fancy_headers.each do |fancy_header|
+          if fancy_header.include?("Location")
+            @jumps = @jumps.next
+            print "\n"
+            puts fancy_header.gsub! 'Location', 'Hop'
+          end
+        end
+      }
+
+    end
+
+    c.perform
+  rescue
+  print "\n"
+  puts "Bad URL, please fix your typo and try again :)"
+  end
+end
