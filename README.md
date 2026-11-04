@@ -99,7 +99,7 @@ bundle install
 bundle exec rake test
 ```
 
-CI runs the test suite on Ubuntu, macOS and Windows against Ruby 3.1–3.4. Tests use a local
+CI runs the test suite on Ubuntu, macOS and Windows (Ruby 4.0), plus the oldest supported Ruby (3.1) on Ubuntu. Tests use a local
 in-process HTTP server, so they don't need network access.
 
 To release a new version, update `lib/hoper/version.rb` and `CHANGELOG.md`, then run
