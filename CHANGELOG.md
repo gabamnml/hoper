@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+### Fixed
+- Clear guidance for the `certificate verify failed (unable to get certificate CRL)` error,
+  caused by an outdated `openssl` Ruby gem running against OpenSSL 3.6+ (common on macOS
+  with Homebrew). Hoper now suggests `gem update openssl` instead of `--insecure`.
+
 ## 1.0.0
 
 Complete modernization.

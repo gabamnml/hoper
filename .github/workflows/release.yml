@@ -1,0 +1,58 @@
+name: Release
+
+# Publishes the gem to RubyGems.org and creates a GitHub Release whenever a
+# version tag (e.g. v1.0.1) is pushed. Uses RubyGems Trusted Publishing (OIDC),
+# so no API key is stored anywhere.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    if: github.repository == 'gabamnml/hoper'
+    runs-on: ubuntu-latest
+    environment:
+      name: rubygems
+      url: https://rubygems.org/gems/hoper
+    permissions:
+      contents: write # create the GitHub Release
+      id-token: write # Trusted Publishing to RubyGems
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby
+          bundler-cache: true
+
+      - name: Check tag matches Hoper::VERSION
+        run: |
+          version=$(ruby -Ilib -e 'require "hoper/version"; print Hoper::VERSION')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match lib/hoper/version.rb ($version)"
+            exit 1
+          fi
+
+      - run: bundle exec rake test
+
+      - name: Build gem
+        run: gem build hoper.gemspec
+
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - name: Push to RubyGems
+        run: gem push hoper-*.gem
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Use this version's CHANGELOG section as release notes.
+          awk -v v="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## " v "$" {on=1; next}
+            /^## / && on {exit}
+            on {print}
+          ' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" hoper-*.gem --title "$GITHUB_REF_NAME" --notes-file notes.md

@@ -96,4 +96,14 @@ class TracerTest < Minitest::Test
     assert_raises(ArgumentError) { Hoper::Tracer.new(method: "POST") }
     assert_raises(ArgumentError) { Hoper::Tracer.new(max_hops: 0) }
   end
+
+  def test_tls_hint_for_openssl_crl_bug
+    hint = Hoper::Tracer.tls_hint("certificate verify failed (unable to get certificate CRL)")
+    assert_includes hint, "gem update openssl"
+    refute_includes hint, "--insecure"
+  end
+
+  def test_tls_hint_default
+    assert_includes Hoper::Tracer.tls_hint("certificate verify failed (self signed certificate)"), "--insecure"
+  end
 end
