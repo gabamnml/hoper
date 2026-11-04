@@ -102,8 +102,19 @@ bundle exec rake test
 CI runs the test suite on Ubuntu, macOS and Windows (Ruby 4.0), plus the oldest supported Ruby (3.1) on Ubuntu. Tests use a local
 in-process HTTP server, so they don't need network access.
 
-To release a new version, update `lib/hoper/version.rb` and `CHANGELOG.md`, then run
-`bundle exec rake release`.
+### Releasing
+
+Releases are automated with GitHub Actions and RubyGems Trusted Publishing:
+
+1. Bump `lib/hoper/version.rb` and add a section to `CHANGELOG.md`; merge to `master`.
+2. Tag and push:
+
+   ```bash
+   git tag v1.2.3 && git push origin v1.2.3
+   ```
+
+The `Release` workflow checks the tag matches the version, runs the tests, publishes the gem
+to RubyGems.org and creates a GitHub Release with the CHANGELOG notes.
 
 ## Contributing
 
