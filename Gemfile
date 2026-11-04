@@ -1,4 +1,8 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-# Specify your gem's dependencies in hoper.gemspec
+source "https://rubygems.org"
+
 gemspec
+
+gem "minitest", "~> 5.20"
+gem "rake", "~> 13.0"
