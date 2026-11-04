@@ -90,6 +90,18 @@ module Hoper
       raise InvalidURLError, "Not a valid http(s) URL: #{url}"
     end
 
+    # Known bug: the system OpenSSL 3.6+ combined with an outdated `openssl`
+    # Ruby gem fails every verification with "unable to get certificate CRL"
+    # even for valid certificates. Updating the gem fixes it.
+    def self.tls_hint(message)
+      if message.include?("unable to get certificate CRL")
+        "\n    Your Ruby 'openssl' gem (#{OpenSSL::VERSION}) is incompatible with " \
+          "#{OpenSSL::OPENSSL_LIBRARY_VERSION}. Fix it with: gem update openssl"
+      else
+        " (use --insecure to skip verification)"
+      end
+    end
+
     private
 
     def request(uri)
@@ -150,7 +162,7 @@ module Hoper
       when Net::OpenTimeout, Net::ReadTimeout, Net::WriteTimeout, Timeout::Error
         "Timed out after #{timeout}s#{where}"
       when OpenSSL::SSL::SSLError
-        "TLS error#{where}: #{error.message} (use --insecure to skip verification)"
+        "TLS error#{where}: #{error.message}#{self.class.tls_hint(error.message)}"
       else
         "#{error.class}: #{error.message}"
       end
