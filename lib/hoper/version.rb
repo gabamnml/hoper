@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Hoper
-  VERSION = "0.1.1"
+  VERSION = "1.0.0"
 end

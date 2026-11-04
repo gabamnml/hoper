@@ -1,8 +1,7 @@
-#!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
-set -vx
+#!/usr/bin/env ruby
+# frozen_string_literal: true
 
-bundle install
-
-# Do any other automated setup that you need to do here
+# Cross-platform setup (works on Windows too): `ruby bin/setup`
+Dir.chdir(File.expand_path("..", __dir__)) do
+  system("bundle", "install") || abort("bundle install failed")
+end
